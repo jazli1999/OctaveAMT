@@ -1,8 +1,9 @@
-'container for classes needed'
+"""container for classes needed"""
 
 __author__ = 'OctaveAMT @ BUPT'
 
-class note(object):
+
+class Note(object):
     __slots__ = ('onset', 'pitch', 'value')
     # onset is a integer stands for the beat number of the current note,
     # pitch is a integer tuple stands for the poly pitches of the current piece, 
@@ -12,7 +13,7 @@ class note(object):
         pass
 
 
-class instr_seq(object):
+class InstrSeq(object):
     __slots__ = ('instr', 'spec_path', 'notes')
     # instr is a string stands for the instrument,
     # spec_path is a string stands for the path of the transformed spectrogram,  
@@ -21,7 +22,8 @@ class instr_seq(object):
     def __init__(self):
         pass
 
-class score(object):
+
+class Score(object):
     __slots__ = ('audio_path', 'instr_seqs', 'tempo', 'midi_path')
     # audio_path is a string stands fot the path of the original audio,  
     # instr_seqs is a instr_seq list  
@@ -30,5 +32,3 @@ class score(object):
     
     def __init__(self):
         pass
-
-    

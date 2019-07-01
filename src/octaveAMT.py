@@ -1,19 +1,27 @@
 import sys
 
-from src.amt_symbol import note, instr_seq, score
-from src.src_sepa import src_seperate
-from src.file_gen import midi_generate
-from src.pitch_detection import pitch_detect
-from src.onset_detection import onset_detect
+from amt.amt_symbol import Note, InstrSeq, Score
 
-def init_score(cur_score, path):
+from amt.src_sepa import src_separate
+from amt.file_gen import midi_generate
+from amt.onset_detection import onset_detect
+from amt.pitch_detection import pitch_detect
+
+
+def init_score(cur_score, path='./'):
     cur_score.audio_path = path
+
 
 if __name__ == '__main__':
     # argv[1] should be the path of the audio source 
-    cur_score = score()
-    init_score(score, path = sys.argv[1])
-    src_seperate(cur_score)
-    onset_detect(cur_score)
-    pitch_detect(cur_score)
-    midi_generate(cur_score)
+    score = Score()
+
+    if len(sys.argv) > 1:
+        init_score(cur_score=score, path=sys.argv[1])
+    else:
+        init_score(cur_score=score)
+    src_separate(score)
+
+    onset_detect(score)
+    pitch_detect(score)
+    midi_generate(score)
