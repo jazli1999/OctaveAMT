@@ -12,12 +12,34 @@ def onset_detect(cur_score):
 
 def get_abs_onset(cur_instr):
     y, sr, c = get_matrix_spec(cur_instr)
-    c = denoise(c)
+    c = de_noise(c)
     d = get_eu_distance(c)
     d = smooth_eu_distance(d)
     d = moving_window_normal(y, sr, d)
-    abs_onset = get_local_peak(d)
-    return abs_onset
+    p = get_local_peak(d)
+
+    abs_onset_note = []
+    abs_value = []
+    for i in range(0, p.shape[0]):
+        if p[i] == 1:
+            abs_onset_note.append(i)
+
+    return abs_onset_note
+
+
+def get_semiquaver(abs_onset_note):
+    abs_value = []
+    for i in range(0, len(abs_onset_note) - 1):
+        abs_value.append(abs_onset_note[i + 1] - abs_onset_note[i])
+
+    # Get the minimum as semiquaver
+
+
+def get_value(semi, abs_value):
+    value = []
+    for i in abs_value:
+        value.append(round(i/semi))
+    return value
 
 
 def get_matrix_spec(cur_instr):
@@ -31,7 +53,7 @@ def get_matrix_spec(cur_instr):
     return y, sr, c
 
 
-def denoise(c):
+def de_noise(c):
     n_c = c / np.max(c)
     sigma = 0.1
     for i in range(0, c.shape[0]):
@@ -101,25 +123,24 @@ def moving_window_normal(y, sr, d):
 
 def get_local_peak(d):
     # to cut out the "extremely large" parts
-    onset = np.ndarray(d.shape)
+    p = np.ndarray(d.shape)
 
-    onset[0] = 0
+    p[0] = 0
     sigma = 0
     count = 0
-    for i in range(1, onset.shape[0] - 1):
+    for i in range(1, p.shape[0] - 1):
         if d[i - 1] <= d[i] and d[i] >= d[i + 1]:
-            onset[i] = d[i]
-            sigma += onset[i]
+            p[i] = d[i]
+            sigma += p[i]
             count += 1
         else:
-            onset[i] = 0
+            p[i] = 0
 
     sigma = sigma / count * 1.5
-    for i in range(1, onset.shape[0]):
-        if onset[i] <= sigma:
-            onset[i] = 0
+    for i in range(1, p.shape[0]):
+        if p[i] <= sigma:
+            p[i] = 0
         else:
-            onset[i] = 1
-    return onset
-
+            p[i] = 1
+    return p
 
