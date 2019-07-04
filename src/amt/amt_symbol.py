@@ -3,6 +3,9 @@
 __author__ = 'OctaveAMT @ BUPT'
 
 
+VALUES = (1, 2, 4, 8, 16)
+
+
 class Note(object):
     __slots__ = ('onset', 'pitch', 'value')
     # onset is a integer stands for the beat number of the current note,
@@ -14,8 +17,9 @@ class Note(object):
 
 
 class InstrSeq(object):
-    __slots__ = ('instr', 'spec_path', 'notes')
+    __slots__ = ('instr', 'audio_path', 'spec_path', 'notes')
     # instr is a string stands for the instrument,
+    # audio_path is a string stands for the path of separated audio sequence,
     # spec_path is a string stands for the path of the transformed spectrogram,  
     # notes is a note instance list stands for the note stream of the current instrument 
 

@@ -2,7 +2,7 @@
 
 __author__ = 'Yunfei Song @ BUPT'
 
-from amt.amt_symbol import Note, InstrSeq, Score
+from src.amt.amt_symbol import Note, InstrSeq, Score
 
 
 def midi_generate(cur_score):
