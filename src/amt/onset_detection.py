@@ -7,7 +7,54 @@ import matplotlib.pyplot as plt
 
 
 def onset_detect(cur_score):
-    pass
+    get_score_onset(cur_score)
+
+
+def get_score_onset(cur_score):
+    abs_onsets = []
+    abs_values = []
+    tempos = []
+
+    for seq in cur_score.instr_seqs:
+        onset, value, tempo = get_instr_onset(seq)
+        abs_onsets.append(onset)
+        abs_values.append(value)
+        tempos.append(tempo)
+
+    cur_score.tempo = get_tempo(tempos)
+
+    for i in range(0, len(cur_score.instr_seqs)):
+        onset = get_onset(abs_onsets[i], cur_score.tempo)
+        value = get_value(cur_score.tempo, abs_values[i])
+        notes = note_generation(onset, value)
+        cur_score.instr_seqs[i].notes = notes
+
+
+def get_tempo(tempos):
+    tempo = tempos[0]
+
+    return tempo
+
+
+def note_generation(onset, value):
+    notes = ()
+
+    return notes
+
+
+def get_instr_onset(cur_instr):
+    abs_onset = get_abs_onset(cur_instr)
+    tempo = get_semiquaver(abs_onset)
+    onset = get_onset(abs_onset, tempo)
+    value = get_value(abs_onset, tempo)
+
+    return onset, value, tempo
+
+
+def get_onset(abs_onset, tempo):
+    # relevant onset based on tempo, to be filled in the instr_seq.notes
+    onset = abs_onset
+    return onset
 
 
 def get_abs_onset(cur_instr):
@@ -33,6 +80,8 @@ def get_semiquaver(abs_onset_note):
         abs_value.append(abs_onset_note[i + 1] - abs_onset_note[i])
 
     # Get the minimum as semiquaver
+    semi = 0
+    return semi
 
 
 def get_value(semi, abs_value):
