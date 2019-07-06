@@ -17,8 +17,8 @@ def get_score_onset(cur_score):
 
     for seq in cur_score.instr_seqs:
         onset, value, tempo = get_instr_onset(seq)
-        abs_onsets.append(onset)
-        abs_values.append(value)
+        abs_onsets.append(abs_onsets)
+        abs_values.append(abs_values)
         tempos.append(tempo)
 
     cur_score.tempo = get_tempo(tempos)
@@ -37,7 +37,13 @@ def get_tempo(tempos):
 
 
 def note_generation(onset, value):
-    notes = ()
+    notes = []
+
+    for i in range(0, len(onset)):
+        note = Note()
+        note.onset = onset[i]
+        note.value = value[i]
+        notes.append(note)
 
     return notes
 
