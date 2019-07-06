@@ -27,9 +27,7 @@ def get_score_onset(cur_score):
     for i in range(0, len(cur_score.instr_seqs)):
         onset = get_onset(abs_onsets[i], cur_score.tempo)
         value = get_value(onset)
-
-        # the last onset is actually an offset
-        onset.pop()
+        value.append(8)
 
         notes = note_generation(onset, value)
         cur_score.instr_seqs[i].notes = notes
