@@ -1,11 +1,11 @@
 import sys
 
-from amt.amt_symbol import Note, InstrSeq, Score
+from src.amt.amt_symbol import Note, InstrSeq, Score
 
-from amt.src_sepa import src_separate
-from amt.file_gen import midi_generate
-from amt.onset_detection import onset_detect
-from amt.pitch_detection import pitch_detect
+from src.amt.src_sepa import src_separate
+from src.amt.file_gen import midi_generate
+from src.amt.onset_detection import onset_detect
+from src.amt.pitch_detection import pitch_detect
 
 
 def init_score(cur_score, path='./'):
