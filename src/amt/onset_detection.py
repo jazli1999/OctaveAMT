@@ -27,14 +27,26 @@ def get_score_onset(cur_score):
     for i in range(0, len(cur_score.instr_seqs)):
         onset = get_onset(abs_onsets[i], cur_score.tempo)
         value = get_value(onset)
+
+        # the last onset is actually an offset
+        onset.pop()
+
         notes = note_generation(onset, value)
         cur_score.instr_seqs[i].notes = notes
 
 
 def get_instr_onset(cur_instr):
     abs_onset = get_abs_onset(cur_instr)
+    # debug
+    print(abs_onset)
+
     abs_value = get_abs_value(abs_onset)
+    # debug
+    print(abs_value)
+
     tempo = min(abs_value)
+    # debug
+    print(tempo)
 
     return abs_onset, abs_value, tempo
 
@@ -59,7 +71,7 @@ def get_tempo(tempos, abs_values):
 def get_remain(num, array):
     remain = 0
 
-    for n in array:
+    for n in array[0]:
         remain += (n % num)
 
     return remain
@@ -79,10 +91,11 @@ def note_generation(onset, value):
 
 def get_abs_onset(cur_instr):
     y, sr, c = get_matrix_spec(cur_instr)
+    c = de_dimension(c)
     c = de_noise(c)
     d = get_eu_distance(c)
     d = smooth_eu_distance(d)
-    d = moving_window_normal(y, sr, d)
+    # d = moving_window_normal(y, sr, d)
     p = get_local_peak(d)
 
     abs_onset_note = []
@@ -95,7 +108,7 @@ def get_abs_onset(cur_instr):
 
 def get_abs_value(abs_onset):
     abs_value = []
-    for i in range(0, len(abs_onset)):
+    for i in range(0, len(abs_onset)-1):
         abs_value.append(abs_onset[i+1] - abs_onset[i])
 
     return abs_value
@@ -126,9 +139,35 @@ def get_matrix_spec(cur_instr):
 
     librosa.display.specshow(c, sr=sr, x_axis='time', y_axis='cqt_note')
     plt.set_cmap('hot')
+    plt.gca().xaxis.set_major_locator(plt.NullLocator())
+    plt.gca().yaxis.set_major_locator(plt.NullLocator())
+    plt.subplots_adjust(top=1, bottom=0, right=1, left=0, hspace=0, wspace=0)
+    plt.margins(0, 0)
     plt.savefig(cur_instr.spec_path, format='png', transparent=False, dpi=72, pad_inches=0)
 
     return y, sr, c
+
+
+def de_dimension(c):
+    d_c = np.zeros([1, c.shape[0]])
+    local_sum = np.zeros([1, c.shape[0]])
+    # 84*1
+
+    i = 0
+    de_di_rate = 8
+    for i in range(0, c.shape[1]):
+        if (i + 1) % de_di_rate != 0:
+            local_sum += c[:, i]
+        else:
+            local_sum /= de_di_rate
+            d_c = np.r_[d_c, local_sum]
+            local_sum = np.zeros([1, c.shape[0]])
+
+    if (i + 1) % de_di_rate != 0:
+        local_sum /= (i + 1) % de_di_rate
+        d_c = np.r_[d_c, local_sum]
+
+    return d_c
 
 
 def de_noise(c):
@@ -152,15 +191,15 @@ def get_eu_distance(c):
 
 def smooth_eu_distance(d):
     alpha = 0.4
-    d = np.ndarray(d.shape)
+    s_d = np.ndarray(d.shape)
 
-    d[0] = d[0]
+    s_d[0] = d[0]
     for i in range(1, d.shape[0]):
-        d[i] = alpha * d[i] + (1 - alpha) * d[i - 1]
+        s_d[i] = alpha * d[i] + (1 - alpha) * s_d[i - 1]
 
     # 双边
     for i in range(1, d.shape[0]):
-        d[i] = alpha * d[i] + (1 - alpha) * d[i - 1]
+        s_d[i] = alpha * s_d[i] + (1 - alpha) * s_d[i - 1]
 
     return d
 

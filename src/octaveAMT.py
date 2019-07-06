@@ -12,9 +12,9 @@ def init_score(cur_score, path='./'):
     cur_score.audio_path = path
 
 
-def automatic_music_transcription(filepath='./'):
+def automatic_music_transcription(file_path='./'):
     score = Score()
-    init_score(score, filepath)
+    init_score(score, file_path)
 
     src_separate(score)
     onset_detect(score)
@@ -22,17 +22,20 @@ def automatic_music_transcription(filepath='./'):
     midi_generate(score)
 
 
-def pseudo_amt(filepath='./'):
+def pseudo_amt(file_path='./'):
     score = Score()
-    init_score(score, filepath)
+    init_score(score, file_path)
 
     piano = InstrSeq()
     piano.instr = "piano"
-    piano.audio_path = "1.wav"
+    piano.audio_path = "resource/star.wav"
+    piano.spec_path = "resource/star.png"
 
     score.instr_seqs = []
     score.instr_seqs.append(piano)
     onset_detect(score)
+
+    print('done')
 
 
 if __name__ == '__main__':
