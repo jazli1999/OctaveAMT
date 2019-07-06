@@ -3,8 +3,8 @@
 __author__ = 'OctaveAMT @ BUPT'
 
 
-VALUES = (1, 2, 4, 8, 16)
-
+VALUES_A = (1, 2, 4, 8, 16)
+VALUES_B = (3, 6, 12)
 
 class Note(object):
     __slots__ = ('onset', 'pitch', 'value')
@@ -32,7 +32,7 @@ class Score(object):
     # audio_path is a string stands fot the path of the original audio,  
     # instr_seqs is a instr_seq list  
     # tempo is a integer represented by the length of semiquaver notes is a note instance list,  
-    # midi_path is a strign stands for the path of the generated midi file  
+    # midi_path is a string stands for the path of the generated midi file
     
     def __init__(self):
         pass
