@@ -1,6 +1,6 @@
 """detect onset for separated instrument sequences"""
 
-from src.amt.amt_symbol import Note, InstrSeq, Score
+from src.amt.amt_symbol import Note, InstrSeq, Score, VALUES_A, VALUES_B
 import numpy as np
 import librosa
 import librosa.display
@@ -130,7 +130,35 @@ def get_value(onset):
     for i in range(0, len(onset)-1):
         value.append(onset[i+1] - onset[i])
 
+    for i in range(0, len(value)):
+        match_a, bias_a = value_match(value[i], VALUES_A)
+        match_b, bias_b = value_match(value[i], VALUES_B)
+
+        if bias_a <= bias_b:
+            value[i] = match_a
+        else:
+            value[i] = match_b
+
     return value
+
+
+def value_match(v, v_tuple):
+    match = v
+    bias = 0
+
+    if v in v_tuple:
+        return match, bias
+    else:
+        match = v_tuple[0]
+        bias = abs(v-v_tuple[0])
+
+        for i in range(0, len(v_tuple)):
+            new_bias = abs(v-v_tuple[i])
+            if new_bias < bias:
+                match = v_tuple[i]
+                bias = new_bias
+
+        return match, bias
 
 
 def get_matrix_spec(cur_instr):
