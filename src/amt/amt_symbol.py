@@ -6,6 +6,7 @@ __author__ = 'OctaveAMT @ BUPT'
 VALUES_A = (1, 2, 4, 8, 16)
 VALUES_B = (3, 6, 12)
 
+
 class Note(object):
     __slots__ = ('onset', 'pitch', 'value')
     # onset is a integer stands for the beat number of the current note,
