@@ -3,6 +3,7 @@
 from src.amt.amt_symbol import Note, InstrSeq, Score
 import numpy as np
 import librosa
+import librosa.display
 import matplotlib.pyplot as plt
 
 
@@ -16,24 +17,52 @@ def get_score_onset(cur_score):
     tempos = []
 
     for seq in cur_score.instr_seqs:
-        onset, value, tempo = get_instr_onset(seq)
-        abs_onsets.append(abs_onsets)
-        abs_values.append(abs_values)
+        abs_onset, abs_value, tempo = get_instr_onset(seq)
+        abs_onsets.append(abs_onset)
+        abs_values.append(abs_value)
         tempos.append(tempo)
 
-    cur_score.tempo = get_tempo(tempos)
+    cur_score.tempo = get_tempo(tempos, abs_values)
 
     for i in range(0, len(cur_score.instr_seqs)):
         onset = get_onset(abs_onsets[i], cur_score.tempo)
-        value = get_value(cur_score.tempo, abs_values[i])
+        value = get_value(onset)
         notes = note_generation(onset, value)
         cur_score.instr_seqs[i].notes = notes
 
 
-def get_tempo(tempos):
-    tempo = tempos[0]
+def get_instr_onset(cur_instr):
+    abs_onset = get_abs_onset(cur_instr)
+    abs_value = get_abs_value(abs_onset)
+    tempo = min(abs_value)
+
+    return abs_onset, abs_value, tempo
+
+
+def get_tempo(tempos, abs_values):
+    remains = [0, 0]
+
+    avg = round(np.average(tempos))
+    mini = round(min(tempos))
+
+    remains[0] = get_remain(avg, abs_values)
+    remains[1] = get_remain(mini, abs_values)
+
+    if remains[0] < remains[1]:
+        tempo = avg
+    else:
+        tempo = mini
 
     return tempo
+
+
+def get_remain(num, array):
+    remain = 0
+
+    for n in array:
+        remain += (n % num)
+
+    return remain
 
 
 def note_generation(onset, value):
@@ -48,21 +77,6 @@ def note_generation(onset, value):
     return notes
 
 
-def get_instr_onset(cur_instr):
-    abs_onset = get_abs_onset(cur_instr)
-    tempo = get_semiquaver(abs_onset)
-    onset = get_onset(abs_onset, tempo)
-    value = get_value(abs_onset, tempo)
-
-    return onset, value, tempo
-
-
-def get_onset(abs_onset, tempo):
-    # relevant onset based on tempo, to be filled in the instr_seq.notes
-    onset = abs_onset
-    return onset
-
-
 def get_abs_onset(cur_instr):
     y, sr, c = get_matrix_spec(cur_instr)
     c = de_noise(c)
@@ -72,7 +86,6 @@ def get_abs_onset(cur_instr):
     p = get_local_peak(d)
 
     abs_onset_note = []
-    abs_value = []
     for i in range(0, p.shape[0]):
         if p[i] == 1:
             abs_onset_note.append(i)
@@ -80,20 +93,30 @@ def get_abs_onset(cur_instr):
     return abs_onset_note
 
 
-def get_semiquaver(abs_onset_note):
+def get_abs_value(abs_onset):
     abs_value = []
-    for i in range(0, len(abs_onset_note) - 1):
-        abs_value.append(abs_onset_note[i + 1] - abs_onset_note[i])
+    for i in range(0, len(abs_onset)):
+        abs_value.append(abs_onset[i+1] - abs_onset[i])
 
-    # Get the minimum as semiquaver
-    semi = 0
-    return semi
+    return abs_value
 
 
-def get_value(semi, abs_value):
+def get_onset(abs_onset, tempo):
+    # relevant onset based on tempo, to be filled in the instr_seq.notes
+    onset = abs_onset
+
+    for i in range(0, len(onset)):
+        onset[i] = round(onset[i] / tempo)
+
+    return onset
+
+
+def get_value(onset):
     value = []
-    for i in abs_value:
-        value.append(round(i/semi))
+
+    for i in range(0, len(onset)-1):
+        value.append(onset[i+1] - onset[i])
+
     return value
 
 
@@ -198,4 +221,3 @@ def get_local_peak(d):
         else:
             p[i] = 1
     return p
-
