@@ -16,7 +16,7 @@ def pitch_detect(sc):
     classes = ['48', '53', '55', '57', '59', '60', '62', '64', '65', '72', '74', '76', '77', '79', '81']  # temp
     best_threshold = [0.1 for i in range(15)]  # temp
     model = load_model(pm)
-    
+
     for instr_seq in sc.instr_seqs:
 
         img = cv2.imread(instr_seq.spec_path, 1)
@@ -48,3 +48,4 @@ def pitch_detect(sc):
             note.pitch = result_tuple
 
     return sc
+
