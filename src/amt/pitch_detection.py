@@ -18,7 +18,6 @@ def pitch_detect(sc):
     model = load_model(pm)
 
     for instr_seq in sc.instr_seqs:
-
         img = cv2.imread(instr_seq.spec_path, 1)
         # print(instr_seq.spec_path)
         # plt.imshow(img)
@@ -26,7 +25,6 @@ def pitch_detect(sc):
         # print(valueto)
 
         for note in instr_seq.notes:
-
             onset = valueto
             valueto = math.ceil(onset + math.ceil(note.value * sc.tempo))
             # print(onset,valueto)
@@ -35,7 +33,6 @@ def pitch_detect(sc):
             imgtest = transform.resize(imgtest, (100, 100))
             imgtest = imgtest.transpose((2, 0, 1))
             imgtest = np.expand_dims(imgtest, axis=0)
-
             proba = model.predict(imgtest)
             y_pred = np.array([1 if proba[0, i] >= best_threshold[i] else 0 for i in range(15)])
             # show the probabilities for each of the individual labels
@@ -48,4 +45,3 @@ def pitch_detect(sc):
             note.pitch = result_tuple
 
     return sc
-
