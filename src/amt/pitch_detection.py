@@ -11,9 +11,14 @@ from skimage import transform
 from keras.models import load_model
 
 
-def pitch_detect(sc):
-    pm = "../cnn/CNN.model"  # temp
-    ps = "../cut/"
+def pitch_detect(score):
+    print('Pitch detecting...')
+    cnn_process(score)
+
+
+def cnn_process(sc):
+    pm = "./cnn/CNN.model"  # temp
+    ps = "./cut/"
     classes = ['48', '53', '55', '57', '59', '60', '62', '64', '65', '72', '74', '76', '77', '79', '81']  # temp
     best_threshold = [0.1 for i in range(15)]  # temp
     model = load_model(pm)

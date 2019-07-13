@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 
 
 def onset_detect(cur_score):
+    print("Onset detecting....")
     get_score_onset(cur_score)
 
 
@@ -34,15 +35,16 @@ def get_score_onset(cur_score):
 
 
 def get_instr_onset(cur_instr):
-    abs_onset = get_abs_onset(cur_instr)
+    abs_onset, rate = get_abs_onset(cur_instr)
     # debug
     print(abs_onset)
 
     abs_value = get_abs_value(abs_onset)
     # debug
+
     print(abs_value)
 
-    tempo = min(abs_value)
+    tempo = min(abs_value) * rate
     # debug
     print(tempo)
 
@@ -89,7 +91,7 @@ def note_generation(onset, value):
 
 def get_abs_onset(cur_instr):
     y, sr, c = get_matrix_spec(cur_instr)
-    c = de_dimension(c)
+    c, rate = de_dimension(c)
     c = de_noise(c)
     d = get_eu_distance(c)
     d = smooth_eu_distance(d)
@@ -101,7 +103,7 @@ def get_abs_onset(cur_instr):
         if p[i] == 1:
             abs_onset_note.append(i)
 
-    return abs_onset_note
+    return abs_onset_note, rate
 
 
 def get_abs_value(abs_onset):
@@ -193,7 +195,7 @@ def de_dimension(c):
         local_sum /= (i + 1) % de_di_rate
         d_c = np.r_[d_c, local_sum]
 
-    return d_c
+    return d_c, de_di_rate-1
 
 
 def de_noise(c):

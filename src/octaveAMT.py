@@ -22,7 +22,7 @@ def automatic_music_transcription(file_path='./'):
     midi_generate(score)
 
 
-def pseudo_amt(file_path='./'):
+def pseudo_source_separation(file_path='./'):
     score = Score()
     init_score(score, file_path)
 
@@ -33,9 +33,17 @@ def pseudo_amt(file_path='./'):
 
     score.instr_seqs = []
     score.instr_seqs.append(piano)
-    onset_detect(score)
 
-    print('done')
+    return score
+
+
+def pseudo_amt(file_path='./'):
+    score = pseudo_source_separation(file_path)
+    onset_detect(score)
+    print('[2] Onset detection finished\n')
+
+    pitch_detect(score)
+    print('[3] Pitch detection finished\n')
 
 
 if __name__ == '__main__':
