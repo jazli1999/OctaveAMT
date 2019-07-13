@@ -28,10 +28,21 @@ def get_score_onset(cur_score):
     for i in range(0, len(cur_score.instr_seqs)):
         onset = get_onset(abs_onsets[i], cur_score.tempo)
         value = get_value(onset)
-        value.append(8)
+        value.append(4)
+
+        onset = post_process(onset)
 
         notes = note_generation(onset, value)
         cur_score.instr_seqs[i].notes = notes
+
+
+def post_process(onset):
+    std = onset[0]
+
+    for i in range(0, len(onset)):
+        onset[i] = onset[i] - std
+
+    return onset
 
 
 def get_instr_onset(cur_instr):
@@ -44,7 +55,7 @@ def get_instr_onset(cur_instr):
 
     print(abs_value)
 
-    tempo = min(abs_value) * rate
+    tempo = min(abs_value)
     # debug
     print(tempo)
 
@@ -165,7 +176,8 @@ def get_matrix_spec(cur_instr):
     y, sr = librosa.load(cur_instr.audio_path)
     c = np.abs(librosa.cqt(y, sr=sr, hop_length=64, n_bins=84, bins_per_octave=12))
 
-    librosa.display.specshow(c, sr=sr, x_axis='time', y_axis='cqt_note')
+    spec_c = remove_zeros(c)
+    librosa.display.specshow(spec_c, sr=sr, x_axis='time', y_axis='cqt_note')
     plt.set_cmap('hot')
     plt.gca().xaxis.set_major_locator(plt.NullLocator())
     plt.gca().yaxis.set_major_locator(plt.NullLocator())
@@ -174,6 +186,29 @@ def get_matrix_spec(cur_instr):
     plt.savefig(cur_instr.spec_path, format='png', transparent=False, dpi=72, pad_inches=0)
 
     return y, sr, c
+
+
+def remove_zeros(c):
+    zero_continues = True
+    spec_c = np.array(c)
+    db = librosa.amplitude_to_db(spec_c)
+    std = db[0, 0]
+    count = 0
+    while zero_continues:
+        cur_frame = db[:, 0]
+        for elem in cur_frame:
+            if elem > 0:
+                zero_continues = False
+                break
+        if zero_continues:
+            spec_c = spec_c[:, 1:]
+            db = db[:, 1:]
+            print(spec_c.shape)
+            count += 1
+        else:
+            break
+
+    return spec_c
 
 
 def de_dimension(c):
