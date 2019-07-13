@@ -65,8 +65,8 @@ def get_instr_onset(cur_instr):
 def get_tempo(tempos, abs_values):
     remains = [0, 0]
 
-    avg = round(np.average(tempos))
-    mini = round(min(tempos))
+    avg = np.ceil(np.average(tempos))
+    mini = np.ceil(min(tempos))
 
     remains[0] = get_remain(avg, abs_values)
     remains[1] = get_remain(mini, abs_values)

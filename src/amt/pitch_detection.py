@@ -23,20 +23,20 @@ def cnn_process(sc):
     best_threshold = [0.1 for i in range(15)]  # temp
     model = load_model(pm)
 
-    for i1,instr_seq in enumerate(sc.instr_seqs):
+    for i1, instr_seq in enumerate(sc.instr_seqs):
         img = cv2.imread(instr_seq.spec_path, 1)
         # print(instr_seq.spec_path)
         # plt.imshow(img)
-        valueto = math.ceil((instr_seq.notes[0].onset - 1) * sc.tempo)
+        valueto = math.ceil(instr_seq.notes[0].onset * sc.tempo)
         # print(valueto)
 
-        for i2,note in enumerate(instr_seq.notes):
+        for i2, note in enumerate(instr_seq.notes):
             onset = valueto
             valueto = math.ceil(onset + math.ceil(note.value * sc.tempo))
             # print(onset,valueto)
             imgtest = img[:, onset:valueto]
-            filename=("%d"+"."+"%d")%(i1,i2)+".jpg"
-            cv2.imwrite(ps+filename,imgtest)
+            filename=("%d"+"."+"%d") % (i1, i2)+".jpg"
+            cv2.imwrite(ps+filename, imgtest)
             # plt.imshow(imgtest)
             imgtest = transform.resize(imgtest, (100, 100))
             imgtest = imgtest.transpose((2, 0, 1))
