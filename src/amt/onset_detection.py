@@ -23,10 +23,11 @@ def get_score_onset(cur_score):
         abs_values.append(abs_value)
         tempos.append(tempo)
 
-    cur_score.tempo = get_tempo(tempos, abs_values)
+    tempo_using = get_tempo(tempos, abs_values)
+    cur_score.tempo = tempo_using * 1.15
 
     for i in range(0, len(cur_score.instr_seqs)):
-        onset = get_onset(abs_onsets[i], cur_score.tempo)
+        onset = get_onset(abs_onsets[i], tempo_using)
         value = get_value(onset)
         value.append(4)
 
@@ -65,8 +66,8 @@ def get_instr_onset(cur_instr):
 def get_tempo(tempos, abs_values):
     remains = [0, 0]
 
-    avg = np.ceil(np.average(tempos))
-    mini = np.ceil(min(tempos))
+    avg = np.average(tempos)
+    mini = min(tempos)
 
     remains[0] = get_remain(avg, abs_values)
     remains[1] = get_remain(mini, abs_values)
@@ -76,6 +77,7 @@ def get_tempo(tempos, abs_values):
     else:
         tempo = mini
 
+    tempo = tempo
     return tempo
 
 
