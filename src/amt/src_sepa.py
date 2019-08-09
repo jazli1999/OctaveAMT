@@ -36,18 +36,18 @@ def default_nmf_model(c, n_components):
     nmf_model = NMF(n_components=n_components, init='random', max_iter=2000, alpha=0, l1_ratio=0.0)
     w = nmf_model.fit_transform(c)
     h = nmf_model.components_
-    
+
     return w, h, nmf_model.reconstruction_err_
 
 
-def reconstruct(w, h, n_components, sr, phase):
+def reconstruct(n_w, n_h, n_components, sr, phase):
     # n_s for all specs
     # n_c for all synthesis audios
     n_spec = []
     n_wav = []
     for i in range(0, n_components):
-        w = w[:, i:i + 1]
-        h = h[i:i + 1, :]
+        w = n_w[:, i:i + 1]
+        h = n_h[i:i + 1, :]
         s = np.multiply(w, h)
         c = s * phase
         wav = icqt(c, sr=sr, hop_length=64)
@@ -60,17 +60,17 @@ def reconstruct(w, h, n_components, sr, phase):
 
 def instr_seqs_generate(cur_score, n_spec, n_wav, sr):
     instr_seqs = []
-    path_prefix = cur_score.audio_path.split('.')[0] + '_'
+    path_prefix = cur_score.audio_path.split('.wav')[0] + '_'
 
     for spec, wav, index in zip(n_spec, n_wav, range(0, cur_score.instr_num)):
         instr_seq = InstrSeq()
         instr_seq.cqt_matrix = spec
 
-        instr_seq.spec_path = path_prefix + str(index) + '.wav'
+        instr_seq.spec_path = path_prefix + str(index) + '.png'
         save_matrix_spec(instr_seq.spec_path, spec, sr)
 
         instr_seq.audio_path = path_prefix + str(index) + '.wav'
-        write(instr_seq.audio_path, wav, sr)
+        write(instr_seq.audio_path, sr, wav)
 
         instr_seqs.append(instr_seq)
 

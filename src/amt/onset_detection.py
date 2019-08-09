@@ -5,6 +5,8 @@ import numpy as np
 import librosa
 import librosa.display
 
+import matplotlib.pyplot as plt
+
 
 def onset_detect(cur_score):
     print("Onset detecting....")
@@ -55,7 +57,10 @@ def get_instr_onset(cur_instr):
 
     print(abs_value)
 
-    tempo = min(abs_value)
+    if len(abs_value) == 0:
+        tempo = 4
+    else:
+        tempo = min(abs_value)
     # debug
     print(tempo)
 
@@ -104,13 +109,23 @@ def note_generation(onset, value):
 def get_abs_onset(cur_instr):
     # y, sr, c = get_matrix_spec(cur_instr)
     c = cur_instr.cqt_matrix
+    c = zero_padding(c)
+    # c = remove_zero_tailing(c)
+
     c, rate = de_dimension(c)
     # rate -> de_di_rate
     c = de_noise(c)
+
+    debug_plot(c, 22050)
+
     d = get_eu_distance(c)
+    debug_figure(d)
+
     d = smooth_eu_distance(d)
+    debug_figure(d)
     # d = moving_window_normal(y, sr, d)
     p = get_local_peak(d)
+    debug_figure(p)
 
     abs_onset_note = []
     for i in range(0, p.shape[0]):
@@ -270,20 +285,60 @@ def get_local_peak(d):
     p = np.ndarray(d.shape)
 
     p[0] = 0
-    sigma = 0
-    count = 0
+    # sigma = 0
+    # count = 0
     for i in range(1, p.shape[0] - 1):
         if d[i - 1] <= d[i] and d[i] >= d[i + 1]:
             p[i] = d[i]
-            sigma += p[i]
-            count += 1
+            # sigma += p[i]
+            # count += 1
         else:
             p[i] = 0
-
-    sigma = sigma / count * 1.5
+    #
+    # sigma = sigma / count * 1.5
+    sigma = np.max(d) / 2
     for i in range(1, p.shape[0]):
         if p[i] <= sigma:
             p[i] = 0
         else:
             p[i] = 1
     return p
+
+
+def remove_zero_tailing(c):
+    zero_continues = True
+    spec_c = np.array(c)
+    db = librosa.amplitude_to_db(spec_c)
+    count = 0
+    while zero_continues:
+        cur_frame = db[:, -1]
+        for elem in cur_frame:
+            if elem > 0:
+                zero_continues = False
+                break
+        if zero_continues:
+            spec_c = spec_c[:, :-1]
+            db = db[:, :-1]
+            count += 1
+        else:
+            break
+
+    return spec_c
+
+
+def zero_padding(c):
+    zero = np.zeros([84, int(c.shape[1]/4)])
+    c = np.hstack((zero, c))
+
+    return c
+
+
+def debug_plot(c, sr):
+    librosa.display.specshow(c, sr=sr, x_axis='time', y_axis='cqt_note')
+    plt.set_cmap('hot')
+    plt.show()
+
+
+def debug_figure(d):
+    plt.plot(range(0, d.shape[0]), d)
+    plt.show()

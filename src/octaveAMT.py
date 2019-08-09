@@ -37,8 +37,14 @@ def pseudo_source_separation(file_path='./'):
     return score
 
 
-def pseudo_amt(file_path='./'):
-    score = pseudo_source_separation(file_path)
+def pseudo_amt(file_path='./resource/Sample.wav'):
+    score = Score()
+    score.audio_path = file_path
+    score.instr_num = 2
+
+    src_separate(score)
+    print('[1] Source Separation finished\n')
+
     onset_detect(score)
     print('[2] Onset detection finished\n')
 
