@@ -30,8 +30,9 @@ class InstrSeq(object):
 
 
 class Score(object):
-    __slots__ = ('audio_path', 'instr_seqs', 'tempo', 'midi_path')
-    # audio_path is a string stands fot the path of the original audio,  
+    __slots__ = ('audio_path', 'instr_num', 'instr_seqs', 'tempo', 'midi_path')
+    # audio_path is a string stands fot the path of the original audio,
+    # instr_num is a integer stands for the number of instruments needed to be separated
     # instr_seqs is a instr_seq list  
     # tempo is a integer represented by the length of semiquaver notes is a note instance list,  
     # midi_path is a string stands for the path of the generated midi file
