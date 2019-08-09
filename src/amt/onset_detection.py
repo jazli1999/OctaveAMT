@@ -103,8 +103,10 @@ def note_generation(onset, value):
 
 
 def get_abs_onset(cur_instr):
-    y, sr, c = get_matrix_spec(cur_instr)
+    # y, sr, c = get_matrix_spec(cur_instr)
+    c = cur_instr.cqt_matrix
     c, rate = de_dimension(c)
+    # rate -> de_di_rate
     c = de_noise(c)
     d = get_eu_distance(c)
     d = smooth_eu_distance(d)
