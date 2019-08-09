@@ -4,7 +4,6 @@ from src.amt.amt_symbol import Note, InstrSeq, Score, VALUES_A, VALUES_B
 import numpy as np
 import librosa
 import librosa.display
-import matplotlib.pyplot as plt
 
 
 def onset_detect(cur_score):
@@ -174,45 +173,6 @@ def value_match(v, v_tuple):
                 bias = new_bias
 
         return match, bias
-
-
-def get_matrix_spec(cur_instr):
-    y, sr = librosa.load(cur_instr.audio_path)
-    c = np.abs(librosa.cqt(y, sr=sr, hop_length=64, n_bins=84, bins_per_octave=12))
-
-    spec_c = remove_zeros(c)
-    librosa.display.specshow(spec_c, sr=sr, x_axis='time', y_axis='cqt_note')
-    plt.set_cmap('hot')
-    plt.gca().xaxis.set_major_locator(plt.NullLocator())
-    plt.gca().yaxis.set_major_locator(plt.NullLocator())
-    plt.subplots_adjust(top=1, bottom=0, right=1, left=0, hspace=0, wspace=0)
-    plt.margins(0, 0)
-    plt.savefig(cur_instr.spec_path, format='png', transparent=False, dpi=72, pad_inches=0)
-
-    return y, sr, c
-
-
-def remove_zeros(c):
-    zero_continues = True
-    spec_c = np.array(c)
-    db = librosa.amplitude_to_db(spec_c)
-    std = db[0, 0]
-    count = 0
-    while zero_continues:
-        cur_frame = db[:, 0]
-        for elem in cur_frame:
-            if elem > 0:
-                zero_continues = False
-                break
-        if zero_continues:
-            spec_c = spec_c[:, 1:]
-            db = db[:, 1:]
-            print(spec_c.shape)
-            count += 1
-        else:
-            break
-
-    return spec_c
 
 
 def de_dimension(c):
