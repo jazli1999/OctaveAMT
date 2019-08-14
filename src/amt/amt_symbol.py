@@ -18,7 +18,7 @@ class Note(object):
 
 
 class InstrSeq(object):
-    __slots__ = ('instr', 'cqt_matrix', 'audio_path', 'spec_path', 'notes')
+    __slots__ = ('instr', 'cqt_matrix', 'spec_path', 'notes')
     # instr is a string stands for the instrument,
     # cqt_matrix is a np.array stands for the CQT coefficient matrix,
     # audio_path is a string stands for the path of separated audio sequence,
@@ -30,12 +30,13 @@ class InstrSeq(object):
 
 
 class Score(object):
-    __slots__ = ('audio_path', 'instr_num', 'instr_seqs', 'tempo', 'midi_path')
+    __slots__ = ('audio_path', 'instr_num', 'instr_seqs', 'tempo', 'midi_path', 'sr')
     # audio_path is a string stands fot the path of the original audio,
     # instr_num is a integer stands for the number of instruments needed to be separated
     # instr_seqs is a instr_seq list  
     # tempo is a integer represented by the length of semiquaver notes is a note instance list,  
     # midi_path is a string stands for the path of the generated midi file
+    # sr is a integer stands for the sample rate of the audio
     
     def __init__(self):
         pass
