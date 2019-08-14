@@ -1,6 +1,7 @@
 """detect onset for separated instrument sequences"""
 
 from src.amt.amt_symbol import Note, InstrSeq, Score, VALUES_A, VALUES_B
+from math import log, pow, ceil
 import numpy as np
 import librosa
 import librosa.display
@@ -36,6 +37,9 @@ def get_score_onset(cur_score):
 
         notes = note_generation(onset, value)
         cur_score.instr_seqs[i].notes = notes
+
+    # matrix note-frame-wide normalization to get preciser pitch result
+    note_wide_normalization(cur_score, abs_onsets, abs_values)
 
 
 def post_process(onset):
@@ -107,25 +111,19 @@ def note_generation(onset, value):
 
 
 def get_abs_onset(cur_instr):
-    # y, sr, c = get_matrix_spec(cur_instr)
     c = cur_instr.cqt_matrix
     c = zero_padding(c)
-    # c = remove_zero_tailing(c)
 
     c, rate = de_dimension(c)
     # rate -> de_di_rate
+
+    cur_instr.cqt_matrix = c.T
+
     c = de_noise(c)
-
-    debug_plot(c, 22050)
-
     d = get_eu_distance(c)
-    debug_figure(d)
-
     d = smooth_eu_distance(d)
-    debug_figure(d)
     # d = moving_window_normal(y, sr, d)
     p = get_local_peak(d)
-    debug_figure(p)
 
     abs_onset_note = []
     for i in range(0, p.shape[0]):
@@ -145,7 +143,7 @@ def get_abs_value(abs_onset):
 
 def get_onset(abs_onset, tempo):
     # relevant onset based on tempo, to be filled in the instr_seq.notes
-    onset = abs_onset
+    onset = list(abs_onset)
 
     for i in range(0, len(onset)):
         onset[i] = round(onset[i] / tempo)
@@ -232,7 +230,7 @@ def get_eu_distance(c):
 
 
 def smooth_eu_distance(d):
-    alpha = 0.4
+    alpha = 0.2
     s_d = np.ndarray(d.shape)
 
     s_d[0] = d[0]
@@ -285,18 +283,17 @@ def get_local_peak(d):
     p = np.ndarray(d.shape)
 
     p[0] = 0
-    # sigma = 0
-    # count = 0
+    sigma = 0
+    count = 0
     for i in range(1, p.shape[0] - 1):
         if d[i - 1] <= d[i] and d[i] >= d[i + 1]:
             p[i] = d[i]
-            # sigma += p[i]
-            # count += 1
+            sigma += p[i]
+            count += 1
         else:
             p[i] = 0
-    #
-    # sigma = sigma / count * 1.5
-    sigma = np.max(d) / 2
+
+    sigma = sigma / count * 5
     for i in range(1, p.shape[0]):
         if p[i] <= sigma:
             p[i] = 0
@@ -331,6 +328,62 @@ def zero_padding(c):
     c = np.hstack((zero, c))
 
     return c
+
+
+def get_matrix_spec(cur_instr, sr):
+    librosa.display.specshow(cur_instr.cqt_matrix, sr=sr, x_axis='time', y_axis='cqt_note')
+    plt.set_cmap('hot')
+    plt.gca().xaxis.set_major_locator(plt.NullLocator())
+    plt.gca().yaxis.set_major_locator(plt.NullLocator())
+    plt.subplots_adjust(top=1, bottom=0, right=1, left=0, hspace=0, wspace=0)
+    plt.margins(0, 0)
+    plt.savefig(cur_instr.spec_path, format='png', transparent=False, dpi=72, pad_inches=0)
+
+
+def note_wide_normalization(cur_score, abs_onsets, abs_values):
+
+    for seq, onsets, values in zip(cur_score.instr_seqs, abs_onsets, abs_values):
+        c = seq.cqt_matrix
+
+        # cut && process
+        for onset, value in zip(onsets, values):
+            note_spec = c[:, onset:onset+value]
+            cur_max = np.max(note_spec)
+            if cur_max == 0:
+                continue
+
+            for i in range(0, note_spec.shape[0]):
+                for j in range(0, note_spec.shape[1]):
+                    # """ function 1
+                    note_spec[i][j] /= cur_max
+                    note_spec[i][j] = np.power(8, note_spec[i][j]) - 1
+                    # """
+
+            c[:, onset:onset+value] = note_spec
+
+        seq.cqt_matrix = remove_zeros(c)
+        get_matrix_spec(seq, cur_score.sr)
+
+
+def remove_zeros(c):
+    zero_continues = True
+    spec_c = np.array(c)
+    db = librosa.amplitude_to_db(spec_c)
+    count = 0
+    while zero_continues:
+        cur_frame = db[:, 0]
+        for elem in cur_frame:
+            if elem > 0:
+                zero_continues = False
+                break
+        if zero_continues:
+            spec_c = spec_c[:, 1:]
+            db = db[:, 1:]
+            count += 1
+        else:
+            break
+
+    return spec_c
 
 
 def debug_plot(c, sr):
